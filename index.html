@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no, address=no, email=no, date=no">
+<meta name="theme-color" content="#1d4ed8">
+<title>삿포로 2박3일</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px; line-height: 1.6; color: #1f2937; background: #f9fafb;
+  padding-bottom: calc(80px + env(safe-area-inset-bottom));
+  -webkit-text-size-adjust: 100%;
+}
+header {
+  background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
+  color: white; padding: 16px 16px 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+header h1 { margin: 0 0 4px 0; font-size: 18px; font-weight: 700; }
+header .sub { font-size: 12px; opacity: 0.9; }
+.sticky-top {
+  position: sticky; top: 0; z-index: 100;
+  background: white;
+}
+nav.tabs {
+  display: flex; background: white; border-bottom: 1px solid #e5e7eb;
+}
+nav.tabs button {
+  flex: 1 1 0; min-width: 0; padding: 12px 2px;
+  background: none; border: none; border-bottom: 3px solid transparent;
+  font-size: 12px; font-weight: 600; color: #6b7280; cursor: pointer;
+  white-space: nowrap; font-family: inherit;
+  touch-action: manipulation;
+}
+nav.tabs button.active { color: #1d4ed8; border-bottom-color: #1d4ed8; }
+.section { padding: 16px; display: none; }
+.section.active { display: block; }
+h2 { font-size: 17px; margin: 20px 0 10px 0; color: #111827; padding-bottom: 6px; border-bottom: 2px solid #e5e7eb; }
+h2:first-child { margin-top: 0; }
+h3 { font-size: 14px; margin: 14px 0 8px 0; color: #374151; }
+.card {
+  background: white; border-radius: 12px; padding: 14px;
+  margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  border: 1px solid #f3f4f6;
+}
+.intro { font-size: 13px; color: #6b7280; margin: -6px 0 12px 0; }
+.step {
+  display: flex; gap: 10px; padding: 12px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+.step:last-child { border-bottom: none; }
+.step-num {
+  flex-shrink: 0; width: 26px; height: 26px;
+  border-radius: 50%; background: #dbeafe; color: #1e40af;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 13px;
+}
+.step-content { flex: 1; }
+.step-name { font-weight: 600; color: #111827; margin-bottom: 4px; }
+.step-meta {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;
+  font-size: 12px;
+}
+.meta-pill {
+  background: #f3f4f6; padding: 2px 8px; border-radius: 4px;
+  color: #4b5563; font-weight: 500;
+}
+.meta-pill.highlight { background: #fef3c7; color: #92400e; }
+.move {
+  font-size: 12px; color: #6b7280; padding: 6px 0 6px 36px;
+  font-style: italic;
+}
+.move::before { content: "↓ "; color: #9ca3af; }
+.warning-card {
+  background: #fef2f2; border-left: 3px solid #dc2626;
+  padding: 10px 12px; border-radius: 0 8px 8px 0;
+  margin-bottom: 10px;
+}
+.warning-card .title { font-weight: 700; color: #991b1b; font-size: 13px; }
+.warning-card .body { font-size: 13px; color: #7f1d1d; margin-top: 2px; }
+.tip-card {
+  background: #f0fdf4; border-left: 3px solid #16a34a;
+  padding: 10px 12px; border-radius: 0 8px 8px 0;
+  margin: 8px 0;
+}
+.tip-card .title { font-weight: 700; color: #166534; font-size: 13px; }
+.tip-card .body { font-size: 13px; color: #14532d; margin-top: 2px; }
+.fixed-time {
+  background: #eff6ff; border-radius: 8px; padding: 10px 12px;
+  margin-bottom: 8px; display: flex; align-items: center; gap: 10px;
+}
+.fixed-time .time {
+  font-weight: 700; color: #1d4ed8; font-size: 14px;
+  min-width: 70px;
+}
+.fixed-time .label { font-size: 13px; color: #1e3a8a; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+table th, table td { padding: 8px 6px; text-align: left; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
+table th { background: #f9fafb; font-weight: 600; color: #374151; font-size: 12px; }
+.checklist li { padding: 6px 0; list-style: none; font-size: 14px; }
+.checklist li::before { content: "☐ "; color: #6b7280; margin-right: 4px; }
+ul.checklist { padding: 0; margin: 0; }
+.info-row { display: flex; padding: 6px 0; border-bottom: 1px solid #f3f4f6; }
+.info-row .key { flex-basis: 80px; flex-shrink: 0; color: #6b7280; font-size: 13px; }
+.info-row .val { flex: 1; font-size: 14px; }
+.info-row:last-child { border-bottom: none; }
+#map {
+  width: 100%; height: 500px;
+  height: calc(100svh - 240px);
+  min-height: 400px;
+  border-radius: 12px; border: 1px solid #e5e7eb;
+}
+.map-filters { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+.map-filters button {
+  flex: 1; min-width: 60px; padding: 8px 4px;
+  border-radius: 8px; border: 1.5px solid #e5e7eb;
+  background: white; font-size: 13px; font-weight: 600;
+  color: #374151; cursor: pointer; font-family: inherit;
+}
+.map-filters button.active { border-color: #1d4ed8; background: #1d4ed8; color: white; }
+.legend {
+  display: flex; flex-wrap: wrap; gap: 12px;
+  font-size: 12px; color: #6b7280; margin-top: 10px;
+  padding: 10px; background: white; border-radius: 8px;
+}
+.legend span { display: flex; align-items: center; gap: 4px; }
+.legend .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
+.popup { font-size: 13px; line-height: 1.5; min-width: 140px; }
+.popup b { font-size: 14px; }
+a { color: #1d4ed8; }
+.code-block {
+  background: #1f2937; color: #f9fafb; padding: 12px;
+  border-radius: 8px; font-family: monospace; font-size: 12px;
+  line-height: 1.6; overflow-x: auto;
+}
+@media (min-width: 768px) {
+  body { max-width: 720px; margin: 0 auto; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
+}
+</style>
+</head>
+<body>
+
+<div class="sticky-top">
+<header>
+  <h1>🌸 삿포로 2박3일</h1>
+  <div class="sub">7/1(화)~7/3(목) · 유동성 우선 계획</div>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-target="overview">개요</button>
+  <button class="tab-btn" data-target="constraints">시간제약</button>
+  <button class="tab-btn" data-target="day1">D1</button>
+  <button class="tab-btn" data-target="day2">D2</button>
+  <button class="tab-btn" data-target="day3">D3</button>
+  <button class="tab-btn" data-target="map">지도</button>
+  <button class="tab-btn" data-target="info">정보</button>
+</nav>
+</div>
+
+<!-- ========== OVERVIEW ========== -->
+<section class="section active" id="overview">
+  <h2>기본 정보</h2>
+  <div class="card">
+    <div class="info-row"><div class="key">출발</div><div class="val">7/1 인천T2 08:20 → 신치토세 11:20</div></div>
+    <div class="info-row"><div class="key">귀국</div><div class="val">7/3 신치토세 19:20 → 인천T2 22:15</div></div>
+    <div class="info-row"><div class="key">공항</div><div class="val">JR 쾌속 에어포트 37분, ¥1,150</div></div>
+    <div class="info-row"><div class="key">숙소</div><div class="val"><b>티마크 시티 호텔 오도리</b><br>오도리역 도보 5분</div></div>
+  </div>
+
+  <h2>예상 식비 (1인)</h2>
+  <div class="card">
+    <table>
+      <tr><th></th><th>점심</th><th>저녁</th></tr>
+      <tr><td><b>D1</b></td><td>요이치야 ~¥7,000</td><td>스미레 ¥1,300</td></tr>
+      <tr><td><b>D2</b></td><td>투어 자유중식</td><td>테시카가 ¥1,300 +<br>밀크무라 ¥2,000</td></tr>
+      <tr><td><b>D3</b></td><td>스아게+ ¥1,550</td><td>공항라멘 ¥950</td></tr>
+    </table>
+    <p style="margin-top:10px;font-weight:700;color:#92400e;">합계 ¥15,000~16,000 (14~15만원)</p>
+    <p style="font-size:12px;color:#6b7280;">+ 모이와산 ¥2,330, AOAO ¥2,200, 간식 ¥3,000</p>
+  </div>
+
+  <h2>출국 전 체크</h2>
+  <div class="card">
+    <ul class="checklist">
+      <li>버스투어 사전 예약</li>
+      <li>요이치야 구글 예약</li>
+      <li>AOAO 수족관 사전 티켓</li>
+      <li>IC카드 (Suica/Kitaca) 공항 구매</li>
+      <li>우산 (7월 날씨 변동)</li>
+      <li>가벼운 겉옷 (모이와산 정상 쌀쌀)</li>
+      <li>당일 <a href="https://mt-moiwa.jp/" target="_blank">모이와산 운행 확인</a></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ========== CONSTRAINTS ========== -->
+<section class="section" id="constraints">
+  <h2>꼭 지켜야 하는 시간</h2>
+
+  <h3>Day 2 (수) — 버스투어</h3>
+  <div class="fixed-time"><div class="time">08:50</div><div class="label">다이와 로이넷 집합 (호텔에서 도보 8분)</div></div>
+  <div class="fixed-time"><div class="time">09:00</div><div class="label">투어 출발</div></div>
+  <div class="fixed-time"><div class="time">18:30~19:00</div><div class="label">스스키노/오도리 귀환</div></div>
+
+  <h3>Day 3 (목) — 비행 역산</h3>
+  <div class="fixed-time"><div class="time">17:20</div><div class="label">국제선 체크인 시작</div></div>
+  <div class="fixed-time"><div class="time">16:37</div><div class="label">신치토세 공항 도착</div></div>
+  <div class="fixed-time"><div class="time">16:00</div><div class="label">JR 쾌속 탑승 (삿포로역)</div></div>
+  <div class="fixed-time"><div class="time">15:20</div><div class="label">호텔 짐 회수 마감</div></div>
+
+  <h2>가게 영업·휴무 주의</h2>
+
+  <div class="card">
+    <h3>요이치야 (우니카이센동)</h3>
+    <div class="step-meta">
+      <span class="meta-pill">9:00~16:00</span>
+      <span class="meta-pill highlight">수요일 휴무</span>
+    </div>
+    <p style="font-size:13px;margin:6px 0 0;color:#6b7280;">→ <b>화요일(Day 1) 점심에 가야 함.</b> 13시쯤 평일 대기 적음</p>
+  </div>
+
+  <div class="card">
+    <h3>밀크무라 (아이스크림바)</h3>
+    <div class="step-meta">
+      <span class="meta-pill">화·금토 13~23시</span>
+      <span class="meta-pill highlight">수 17~23시</span>
+      <span class="meta-pill">목 13~23시</span>
+      <span class="meta-pill highlight">월 휴무</span>
+    </div>
+    <p style="font-size:13px;margin:6px 0 0;color:#6b7280;">→ Day 2(수) 저녁 17시 이후</p>
+  </div>
+
+  <div class="card">
+    <h3>테시카가라멘 요코쵸</h3>
+    <div class="step-meta">
+      <span class="meta-pill">11~15:30</span>
+      <span class="meta-pill">16:30~새벽1시</span>
+      <span class="meta-pill highlight">15:30~16:30 브레이크</span>
+    </div>
+    <p style="font-size:13px;margin:6px 0 0;color:#6b7280;">→ 저녁 18시 이후. Day 2 귀환 후 적절</p>
+  </div>
+
+  <div class="card">
+    <h3>스아게+ (수프카레)</h3>
+    <div class="step-meta">
+      <span class="meta-pill">11:30~20:30 (목)</span>
+      <span class="meta-pill">LINE 대기 가능</span>
+    </div>
+    <p style="font-size:13px;margin:6px 0 0;color:#6b7280;">→ <b>11:30 오픈 직후 or 14시 이후</b> 점심 피크 회피</p>
+  </div>
+
+  <div class="card">
+    <h3>스미레 스스키노점 (미소라멘)</h3>
+    <div class="step-meta">
+      <span class="meta-pill">11~24시</span>
+      <span class="meta-pill highlight">18~20시 피크</span>
+    </div>
+    <p style="font-size:13px;margin:6px 0 0;color:#6b7280;">→ <b>17시대 또는 21시 이후</b> 대기 짧음 (20~45분)</p>
+  </div>
+
+  <h2>운휴 위험</h2>
+  <div class="warning-card">
+    <div class="title">⚠️ 모이와산 로프웨이</div>
+    <div class="body">강풍 시 운휴. 7월 운영 10:30~22:00 (15분 간격). 출발 전 <a href="https://mt-moiwa.jp/" target="_blank">공식 사이트</a> 확인</div>
+  </div>
+
+  <h2>24시간·심야 영업 (시간 부담 X)</h2>
+  <div class="card">
+    <p>🛒 메가돈키 — 24시간</p>
+    <p>🍜 테시카가라멘 — 새벽 1시 (금토 새벽 2시)</p>
+    <p>🍜 스미레 — 자정까지</p>
+  </div>
+</section>
+
+<!-- ========== DAY 1 ========== -->
+<section class="section" id="day1">
+  <h2>Day 1 — 7/1 (화)</h2>
+  <p class="intro">도착 + 시내 + 모이와산 야경 · 약 6~7시간 소요</p>
+
+  <div class="warning-card">
+    <div class="title">🕐 시작</div>
+    <div class="body">신치토세 11:20 → JR 쾌속 → 12:50 삿포로역 도착</div>
+  </div>
+
+  <div class="card">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <div class="step-name">🏨 티마크 시티 호텔 짐 맡기기</div>
+        <div class="step-meta"><span class="meta-pill">15분</span></div>
+      </div>
+    </div>
+    <div class="move">도보 6분 (450m)</div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-name">🍣 요이치야 + 니조시장</div>
+        <div class="step-meta"><span class="meta-pill">90분</span><span class="meta-pill">우니카이센동 ¥6,000~</span></div>
+        <p style="font-size:13px;color:#6b7280;margin:4px 0 0;">대기 시 옆 니조시장 유바리멜론·소프트아이스</p>
+      </div>
+    </div>
+    <div class="move">도보 5분 (400m)</div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <div class="step-name">🌳 오도리 공원 산책</div>
+        <div class="step-meta"><span class="meta-pill">30분</span></div>
+      </div>
+    </div>
+    <div class="move">도보 4분 (300m)</div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <div class="step-name">🐧 AOAO 수족관 (모유크 4F)</div>
+        <div class="step-meta"><span class="meta-pill">60분</span><span class="meta-pill">¥2,200</span></div>
+      </div>
+    </div>
+    <div class="move">도보 8분 (650m)</div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <div class="step-name">🏨 호텔 체크인 & 휴식</div>
+        <div class="step-meta"><span class="meta-pill">90분~</span></div>
+      </div>
+    </div>
+    <div class="move">도보 7분 (550m)</div>
+
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-content">
+        <div class="step-name">🍜 스미레 스스키노점</div>
+        <div class="step-meta"><span class="meta-pill">45분</span><span class="meta-pill">미소라멘 ¥1,300</span></div>
+      </div>
+    </div>
+    <div class="move">도보 5분 → 노면전차 25분 + 셔틀 5분</div>
+
+    <div class="step">
+      <div class="step-num">7</div>
+      <div class="step-content">
+        <div class="step-name">🚠 모이와산 정상 전망대</div>
+        <div class="step-meta"><span class="meta-pill">90분</span><span class="meta-pill">¥2,330</span><span class="meta-pill highlight">삿포로 3대 야경</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tip-card">
+    <div class="title">💡 동적 선택</div>
+    <div class="body">
+      • 호텔 휴식 길게 가져가기: AOAO를 17시쯤 가도 OK (~22시)<br>
+      • 일몰 보고 싶다면: 7월 일몰 ~19:15. 18:30 호텔 출발 베스트<br>
+      • 모이와산 컨디션 안 받쳐주면: 생략 → 다음날 새벽 출발 대비
+    </div>
+  </div>
+
+  <h3>🚇 모이와산 이동법</h3>
+  <div class="code-block">스스키노역
+ ↓ 노면전차 외선순환 (¥230, 15~20분)
+로프웨이 이리구치역
+ ↓ 무료 셔틀 (5분, 15분 간격)
+모이와 산로쿠역
+ ↓ 로프웨이 (5분)
+모이와 추후쿠역
+ ↓ 모리스카 (2분)
+정상 전망대
+
+요금: 노면전차 ¥230 + 로프웨이 왕복 ¥2,100</div>
+</section>
+
+<!-- ========== DAY 2 ========== -->
+<section class="section" id="day2">
+  <h2>Day 2 — 7/2 (수)</h2>
+  <p class="intro">버스투어 (08:50 집합 / 18:30 귀환)</p>
+
+  <div class="warning-card">
+    <div class="title">🕐 고정 일정</div>
+    <div class="body">08:50 다이와 로이넷 집합 (10분 전 도착)<br>09:00 출발 / 18:30~19:00 귀환</div>
+  </div>
+
+  <div class="card">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <div class="step-name">🏨 호텔 출발</div>
+        <div class="step-meta"><span class="meta-pill">08:40 출발</span></div>
+      </div>
+    </div>
+    <div class="move">도보 8분 (650m)</div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-name">🚌 다이와 로이넷 집합 (08:50)</div>
+        <div class="step-meta"><span class="meta-pill highlight">10분 전 도착</span></div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <div class="step-name">🚐 비에이/후라노 종일 투어</div>
+        <div class="step-meta"><span class="meta-pill">9~18시</span></div>
+        <p style="font-size:13px;color:#6b7280;margin:4px 0 0;">팜도미타, 사계채의 언덕, 청의호수, 흰수염폭포</p>
+      </div>
+    </div>
+    <div class="move">도보 3분 (250m)</div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <div class="step-name">🍜 테시카가라멘 요코쵸점</div>
+        <div class="step-meta"><span class="meta-pill">45분</span><span class="meta-pill">콘버터미소 ¥1,300</span></div>
+        <p style="font-size:13px;color:#6b7280;margin:4px 0 0;">현장 QR번호표, 대기 30~45분</p>
+      </div>
+    </div>
+    <div class="move">도보 1분</div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <div class="step-name">🍦 밀크무라 (아이스크림바, 6F)</div>
+        <div class="step-meta"><span class="meta-pill">40분</span><span class="meta-pill">세트 ¥2,000</span></div>
+      </div>
+    </div>
+    <div class="move">도보 5분 (400m)</div>
+
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-content">
+        <div class="step-name">🏨 호텔 귀환</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>🍱 자유중식 우선순위</h3>
+  <div class="card">
+    <table>
+      <tr><th>순위</th><th>선택지</th></tr>
+      <tr><td>1</td><td><b>준페이 도시락</b><br><small>투어옵션 (당일 사정)</small></td></tr>
+      <tr><td>2</td><td>라멘 핫카이 비에이노 오카</td></tr>
+      <tr><td>3</td><td>아사히카와 라멘 비에이점</td></tr>
+      <tr><td>4</td><td>로손 비에이 오오마치 (백업)</td></tr>
+    </table>
+  </div>
+
+  <div class="tip-card">
+    <div class="title">💡 동적 선택</div>
+    <div class="body">
+      • 테시카가 대기 길면: 라멘요코쵸 다른 가게로<br>
+      • 너무 피곤하면: 호텔 직행 + 편의점 야식<br>
+      • 알코올 부담스러우면: 밀크무라 무알코올 옵션
+    </div>
+  </div>
+</section>
+
+<!-- ========== DAY 3 ========== -->
+<section class="section" id="day3">
+  <h2>Day 3 — 7/3 (목)</h2>
+  <p class="intro">나카지마공원 + 쇼핑 + 공항라멘 · 약 8시간</p>
+
+  <div class="warning-card">
+    <div class="title">🕐 마감 시간 (역산)</div>
+    <div class="body">15:20 호텔 짐 회수 → 16:00 JR → 16:37 공항 → 17:20 체크인</div>
+  </div>
+
+  <div class="card">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <div class="step-name">🏨 호텔 출발</div>
+      </div>
+    </div>
+    <div class="move">도보 10분 (800m)</div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-name">🌳 나카지마 공원 산책</div>
+        <div class="step-meta"><span class="meta-pill">50분</span></div>
+      </div>
+    </div>
+    <div class="move">도보 10분 (800m)</div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <div class="step-name">🏨 체크아웃 & 짐 보관</div>
+        <div class="step-meta"><span class="meta-pill">15분</span></div>
+      </div>
+    </div>
+    <div class="move">도보 5분 (400m)</div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <div class="step-name">🍛 스아게+ (수프카레)</div>
+        <div class="step-meta"><span class="meta-pill">60분 (대기 포함)</span><span class="meta-pill">¥1,550</span></div>
+      </div>
+    </div>
+    <div class="move">도보 3분 (200m)</div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <div class="step-name">🛒 메가돈키 (면세 쇼핑)</div>
+        <div class="step-meta"><span class="meta-pill">60분</span></div>
+      </div>
+    </div>
+    <div class="move">도보 2분 (150m)</div>
+
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-content">
+        <div class="step-name">🛒 다이이치 (라멘 밀키트, B2F)</div>
+        <div class="step-meta"><span class="meta-pill">30분</span></div>
+      </div>
+    </div>
+    <div class="move">자유 쇼핑 60분 → 도보 15분</div>
+
+    <div class="step">
+      <div class="step-num">7</div>
+      <div class="step-content">
+        <div class="step-name">🛒 칼디 (삿포로역 아피아 지하)</div>
+        <div class="step-meta"><span class="meta-pill">20분</span><span class="meta-pill">수입식품</span></div>
+      </div>
+    </div>
+    <div class="move">도보 5분 (호텔 경유)</div>
+
+    <div class="step">
+      <div class="step-num">8</div>
+      <div class="step-content">
+        <div class="step-name">🏨 호텔 짐 회수 + 디저트</div>
+        <div class="step-meta"><span class="meta-pill">30분</span></div>
+      </div>
+    </div>
+    <div class="move">JR 37분</div>
+
+    <div class="step">
+      <div class="step-num">9</div>
+      <div class="step-content">
+        <div class="step-name">🍜 공항 라멘 도장 (국내선 3F)</div>
+        <div class="step-meta"><span class="meta-pill">30분</span></div>
+        <p style="font-size:13px;color:#6b7280;margin:4px 0 0;">에비소바 이치겐 ¥950 or 케야키 ¥870~</p>
+      </div>
+    </div>
+    <div class="move">국제선 셔틀</div>
+
+    <div class="step">
+      <div class="step-num">10</div>
+      <div class="step-content">
+        <div class="step-name">✈️ 19:20 서울행 출발</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tip-card">
+    <div class="title">💡 동적 선택</div>
+    <div class="body">
+      • 나카지마공원 패스 가능 → 호텔 11시 체크아웃 → 바로 점심<br>
+      • 스아게+ 대기 길면 LINE 등록 후 메가돈키 먼저<br>
+      • 공항에 회·수프카레 등 다른 옵션도 다양
+    </div>
+  </div>
+</section>
+
+<!-- ========== MAP ========== -->
+<section class="section" id="map-section">
+  <h2>인터랙티브 지도</h2>
+  <div class="map-filters">
+    <button class="map-btn active" data-day="all">전체</button>
+    <button class="map-btn" data-day="d1">D1</button>
+    <button class="map-btn" data-day="d2">D2</button>
+    <button class="map-btn" data-day="d3">D3</button>
+    <button class="map-btn" data-day="konbini">🏪 편의점</button>
+  </div>
+  <div id="map"></div>
+  <div class="legend">
+    <span><span class="dot" style="background:#888780;border:1.5px solid #5F5E5A;"></span>삿포로역</span>
+    <span><span class="dot" style="background:#7F77DD;"></span>D1</span>
+    <span><span class="dot" style="background:#1D9E75;"></span>D2</span>
+    <span><span class="dot" style="background:#D85A30;"></span>D3</span>
+    <span><span class="dot" style="background:#EC4899;"></span>편의점</span>
+    <span>📍 핀 탭하면 상세, 다시 탭하면 닫힘</span>
+  </div>
+</section>
+
+<!-- ========== INFO ========== -->
+<section class="section" id="info">
+  <h2>도보 거리 요약</h2>
+  <div class="card">
+    <p>오도리 ↔ 스스키노 = <b>500m (7분)</b></p>
+    <p>삿포로역 ↔ 오도리 = <b>1km (13분)</b> 지하상가</p>
+    <p>호텔 ↔ 오도리역 = <b>400m (5분)</b></p>
+    <p>호텔 ↔ 스스키노역 = <b>600m (7분)</b></p>
+    <p>호텔 ↔ 다이와로이넷 = <b>650m (8분)</b></p>
+    <p>호텔 ↔ 나카지마공원 = <b>800m (10분)</b></p>
+    <p style="margin-top:8px;color:#16a34a;font-weight:600;">→ 메인 동선 모두 도보 10분 이내</p>
+  </div>
+
+  <h2>대안 식당</h2>
+  <div class="card" style="overflow-x:auto;">
+    <table>
+      <tr><th>카테고리</th><th>식당</th><th>휴무</th></tr>
+      <tr><td>미소라멘</td><td>아지노산페이</td><td>월화</td></tr>
+      <tr><td>미소라멘</td><td>멘야 사이미</td><td>월</td></tr>
+      <tr><td>콘버터미소</td><td>라멘 신겐</td><td>없음</td></tr>
+      <tr><td>양고기</td><td>LAMBGUCHI KAZUYA</td><td>없음</td></tr>
+      <tr><td>스시</td><td>토리톤 (대기 1~3h)</td><td>없음</td></tr>
+      <tr><td>크래프트</td><td>베이후테이</td><td>없음</td></tr>
+    </table>
+  </div>
+
+  <h2>유용한 링크</h2>
+  <div class="card">
+    <p>📍 <a href="https://mt-moiwa.jp/" target="_blank">모이와산 운행 확인</a></p>
+    <p>🐧 <a href="https://aoao-sapporo.blue/" target="_blank">AOAO 수족관 티켓</a></p>
+    <p>🍜 <a href="https://www.sumireya.com/" target="_blank">스미레 라멘</a></p>
+    <p>🍛 <a href="http://www.suage.info/" target="_blank">스아게+</a></p>
+    <p>🍣 <a href="https://yoichiya.info/" target="_blank">요이치야</a></p>
+  </div>
+
+  <h2>맥주 축제 안내</h2>
+  <div class="card">
+    <p>오도리 비어가든은 보통 7월 중순부터 → 7/1~3엔 미개최 가능성 높음</p>
+  </div>
+</section>
+
+<script>
+const tabBtns = document.querySelectorAll('.tab-btn');
+const sections = document.querySelectorAll('.section');
+let mapInitialized = false;
+let map;
+
+tabBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    tabBtns.forEach(b => b.classList.remove('active'));
+    sections.forEach(s => s.classList.remove('active'));
+    btn.classList.add('active');
+    const target = btn.dataset.target;
+    const sectionId = target === 'map' ? 'map-section' : target;
+    document.getElementById(sectionId).classList.add('active');
+    window.scrollTo(0, 0);
+    if (target === 'map' && !mapInitialized) {
+      setTimeout(initMap, 100);
+    } else if (target === 'map' && map) {
+      setTimeout(() => map.invalidateSize(), 100);
+    }
+  });
+});
+
+const places = {
+  common: [
+    {name: '🚉 삿포로역', sub: 'JR 쾌속 도착/출발 (공항)', lat: 43.0688, lng: 141.3507}
+  ],
+  hotel_ref: [
+    {name: '🏨 티마크 시티 호텔', sub: '오도리역 도보 5분 · 우리 숙소', lat: 43.0571943, lng: 141.3465942}
+  ],
+  d1: [
+    {name: '🏨 호텔 (짐 맡기기)', sub: '티마크 시티 · 출발점', lat: 43.0571943, lng: 141.3465942, order: 1},
+    {name: '요이치야', sub: '우니 카이센동 ¥6,000~', lat: 43.0588, lng: 141.3583, order: 2},
+    {name: '오도리 공원', sub: '산책 + TV타워', lat: 43.0608, lng: 141.3544, order: 3},
+    {name: 'AOAO 수족관', sub: '펭귄 ¥2,200', lat: 43.0576, lng: 141.3532, order: 4},
+    {name: '스미레', sub: '미소라멘 ¥1,300', lat: 43.0563, lng: 141.3536, order: 5},
+    {name: '모이와 산로쿠역', sub: '로프웨이 출발', lat: 43.0315368, lng: 141.3330395, order: 6},
+    {name: '🌌 모이와산 정상', sub: '삿포로 3대 야경', lat: 43.022197, lng: 141.3224595, order: 7}
+  ],
+  d2: [
+    {name: '🏨 호텔 (출발)', sub: '티마크 시티 · 08:40 출발', lat: 43.0571943, lng: 141.3465942, order: 1},
+    {name: '다이와 로이넷 (집합)', sub: '08:50 집합', lat: 43.0543, lng: 141.353, order: 2},
+    {name: '테시카가라멘', sub: '콘버터미소 ¥1,300', lat: 43.0549, lng: 141.3543, order: 3},
+    {name: '밀크무라', sub: '아이스크림바 ¥2,000', lat: 43.0561, lng: 141.354, order: 4}
+  ],
+  d3: [
+    {name: '🏨 호텔 (출발)', sub: '티마크 시티 · 출발점', lat: 43.0571943, lng: 141.3465942, order: 1},
+    {name: '나카지마 공원', sub: '오전 산책', lat: 43.0445, lng: 141.3544, order: 2},
+    {name: '스아게+', sub: '수프카레 ¥1,550', lat: 43.0557, lng: 141.3513, order: 3},
+    {name: '메가돈키', sub: '면세 쇼핑', lat: 43.057, lng: 141.3526, order: 4},
+    {name: '다이이치', sub: '라멘 밀키트', lat: 43.0551, lng: 141.3527, order: 5},
+    {name: '칼디', sub: '수입식품', lat: 43.0675, lng: 141.3511, order: 6}
+  ],
+  konbini: [
+    {name: '🏪 FamilyMart (미나미 2조 니시 7)', sub: '호텔 바로 옆 ~86m · 24시간', lat: 43.0569099, lng: 141.3475761},
+    {name: '🏪 Seicomart 타누키코지 6초메', sub: '~172m · 6~24시 · 홋카이도 로컬 체인 (HOT CHEF 추천)', lat: 43.0565654, lng: 141.3485307},
+    {name: '🏪 7-Eleven 오도리 니시 7초메', sub: '~245m · 24시간 · 친절한 직원 평판', lat: 43.059336, lng: 141.3473268},
+    {name: '🏪 7-Eleven 미나미 3조 니시 6', sub: '~265m · 24시간', lat: 43.0564351, lng: 141.3496878},
+    {name: '🏪 Lawson 미나미 3조 니시 4초메', sub: '~433m · 24시간', lat: 43.0564078, lng: 141.351827}
+  ]
+};
+const colors = {d1: '#7F77DD', d2: '#1D9E75', d3: '#D85A30', common: '#888780', konbini: '#EC4899', hotel_ref: '#1d4ed8'};
+const layers = {d1: [], d2: [], d3: [], common: [], hotel_ref: [], konbini: [], lines_d1: [], lines_d2: [], lines_d3: []};
+
+function makeIcon(color, size, num) {
+  const numHtml = num
+    ? '<span style="color:white;font-size:' + Math.floor(size * 0.55) + 'px;font-weight:700;line-height:1;font-family:-apple-system,sans-serif;">' + num + '</span>'
+    : '';
+  return L.divIcon({
+    className: '',
+    html: '<div style="width:' + size + 'px;height:' + size + 'px;border-radius:50%;background:' + color + ';border:2.5px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;">' + numHtml + '</div>',
+    iconSize: [size, size],
+    iconAnchor: [size/2, size/2],
+    popupAnchor: [0, -size/2]
+  });
+}
+function popupHtml(p) {
+  return '<div class="popup"><b>' + p.name + '</b><br><span style="color:#666;">' + p.sub + '</span></div>';
+}
+
+function initMap() {
+  if (mapInitialized) return;
+  map = L.map('map', {scrollWheelZoom: true, tap: true}).setView([43.05, 141.34], 13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap',
+    maxZoom: 18
+  }).addTo(map);
+
+  // Tap popup to close it
+  map.on('popupopen', function(e) {
+    const node = e.popup.getElement();
+    if (node) {
+      node.style.cursor = 'pointer';
+      node.addEventListener('click', function() {
+        map.closePopup(e.popup);
+      });
+    }
+  });
+
+  function add(day, arr, color, sz) {
+    arr.forEach(p => {
+      const m = L.marker([p.lat, p.lng], {icon: makeIcon(color, sz, p.order)}).bindPopup(popupHtml(p));
+      m.addTo(map);
+      layers[day].push(m);
+    });
+  }
+  add('common', places.common, colors.common, 14);
+  add('hotel_ref', places.hotel_ref, colors.hotel_ref, 16);
+  add('d1', places.d1, colors.d1, 22);
+  add('d2', places.d2, colors.d2, 22);
+  add('d3', places.d3, colors.d3, 22);
+  add('konbini', places.konbini, colors.konbini, 16);
+
+  function drawRoute(day, arr, color) {
+    const sorted = [...arr].sort((a, b) => a.order - b.order);
+    const coords = sorted.map(p => [p.lat, p.lng]);
+    if (coords.length > 1) {
+      const line = L.polyline(coords, {color: color, weight: 3, opacity: 0.65, dashArray: '8,6'}).addTo(map);
+      layers['lines_' + day].push(line);
+    }
+  }
+  drawRoute('d1', places.d1, colors.d1);
+  drawRoute('d2', places.d2, colors.d2);
+  drawRoute('d3', places.d3, colors.d3);
+
+  function showLayers(keys) {
+    Object.values(layers).flat().forEach(l => map.removeLayer(l));
+    keys.forEach(k => layers[k].forEach(l => map.addLayer(l)));
+  }
+
+  document.querySelectorAll('.map-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.map-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const day = btn.dataset.day;
+      if (day === 'all') {
+        showLayers(['common', 'd1', 'd2', 'd3', 'lines_d1', 'lines_d2', 'lines_d3']);
+        map.setView([43.05, 141.34], 13);
+      } else if (day === 'konbini') {
+        showLayers(['common', 'hotel_ref', 'konbini']);
+        const all = [...layers.hotel_ref, ...layers.konbini];
+        if (all.length > 1) {
+          const g = L.featureGroup(all);
+          map.fitBounds(g.getBounds().pad(0.25));
+        }
+      } else {
+        showLayers(['common', day, 'lines_' + day]);
+        const all = [...layers.common, ...layers[day]];
+        if (all.length > 1) {
+          const g = L.featureGroup(all);
+          map.fitBounds(g.getBounds().pad(0.15));
+        }
+      }
+    });
+  });
+
+  // Initial state: show 'all'
+  showLayers(['common', 'd1', 'd2', 'd3', 'lines_d1', 'lines_d2', 'lines_d3']);
+
+  mapInitialized = true;
+  setTimeout(() => map.invalidateSize(), 100);
+}
+</script>
+
+</body>
+</html>
